@@ -3,6 +3,7 @@ from .models import Kitten, Breed, Rating
 from .serializers import KittenSerializer, BreedSerializer, RatingSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 
 class BreedListView(generics.ListAPIView):
@@ -37,7 +38,7 @@ class RatingCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         # Получаем котенка по переданному ID
         kitten_id = self.kwargs.get('kitten_id')
-        kitten = generics.get_object_or_404(Kitten, pk=kitten_id)
+        kitten = get_object_or_404(Kitten, pk=kitten_id)
 
         # Проверяем, если уже есть оценка от этого пользователя
         if Rating.objects.filter(user=self.request.user, kitten=kitten).exists():
@@ -51,4 +52,4 @@ class KittenRatingListView(generics.ListAPIView):
 
     def get_queryset(self):
         kitten_id = self.kwargs.get('kitten_id')
-        return Rating.objects.filter(kitten_id=kitten_id)
+        return Rating.objects.filter(kitten__id=kitten_id)

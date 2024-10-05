@@ -16,19 +16,29 @@ class Kitten(models.Model):
     breed = models.ForeignKey(Breed, on_delete=models.CASCADE, verbose_name='Порода котенка')
     name = models.CharField(max_length=255, verbose_name='Имя котенка',)
     color = models.CharField(max_length=55, verbose_name='Цвет котенка')
-    birth_date = models.DateField(verbose_name='Возраст котенка (полных месяцев)')
+    birth_date = models.DateField(verbose_name='Дата рождения котенка')
     description = models.TextField(verbose_name='Описание котенка')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='Владелец')
 
     @property
     def age(self):
         today = timezone.now().date()
-        age = int(
-            today.year
-            - (self.birth_date.year)
-            - ((today.month, today.day) < (self.birth_date.month, self.birth_date.day))
-        )
-        return age
+        # Проверяем разницу в днях
+        delta = today - self.birth_date
+
+        # Если разница в днях меньше 30, возвращаем 0
+        if delta.days < 30:
+            return 0
+
+        age_years = today.year - self.birth_date.year
+        age_months = today.month - self.birth_date.month
+
+        # Если текущий день месяца меньше дня рождения, вычитаем 1 месяц
+        if today.day < self.birth_date.day:
+            age_months -= 1
+
+        # Возвращаем полные месяцы
+        return age_years * 12 + age_months
 
     def average_rating(self):
         ratings = self.ratings.all()  # получаем все оценки котенка
