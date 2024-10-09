@@ -4,6 +4,7 @@ from .serializers import KittenSerializer, BreedSerializer, RatingSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as filters
 
 
 class BreedListView(generics.ListAPIView):
@@ -15,6 +16,8 @@ class KittenListView(generics.ListCreateAPIView):
     queryset = Kitten.objects.all()
     serializer_class = KittenSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_fields = ("breed",) # набор полей для фильтрации
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -53,3 +56,5 @@ class KittenRatingListView(generics.ListAPIView):
     def get_queryset(self):
         kitten_id = self.kwargs.get('kitten_id')
         return Rating.objects.filter(kitten__id=kitten_id)
+
+
